@@ -9,10 +9,9 @@ import java.util.List;
 
 public class Utils {
 
-    public static List<CatCountObject> readDataFromCsvFile() {
+    public static List<CatCountObject> readDataFromCsvFile(String fileLocation) {
         List<CatCountObject> records = new LinkedList<>();
-        final String FILE_PATH = "src/hash_catid_count.csv";
-        try (BufferedReader br = new BufferedReader(new FileReader(FILE_PATH))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(fileLocation))) {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] values = line.split("\t");
