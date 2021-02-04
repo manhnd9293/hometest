@@ -2,12 +2,12 @@ package common;
 
 import java.util.List;
 
-public class CatCountObject {
+public class CategoryCountObject {
     private String objectId;
     private List<Long> categoryId;
     private List<Long> categoryCont;
 
-    public CatCountObject(String objectId, List<Long> categoryId, List<Long> categoryCont) {
+    public CategoryCountObject(String objectId, List<Long> categoryId, List<Long> categoryCont) {
         this.objectId = objectId;
         this.categoryId = categoryId;
         this.categoryCont = categoryCont;

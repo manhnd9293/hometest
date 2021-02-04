@@ -9,8 +9,8 @@ import java.util.List;
 
 public class Utils {
 
-    public static List<CatCountObject> readDataFromCsvFile(String fileLocation) {
-        List<CatCountObject> records = new LinkedList<>();
+    public static List<CategoryCountObject> readDataFromCsvFile(String fileLocation) {
+        List<CategoryCountObject> records = new LinkedList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(fileLocation))) {
             String line;
             while ((line = br.readLine()) != null) {
@@ -18,7 +18,7 @@ public class Utils {
                 String objectId = values[0];
                 List<Long> catIdList = getLongList(values[1]);
                 List<Long> catCountList = getLongList(values[2]);
-                records.add(new CatCountObject(objectId, catIdList, catCountList));
+                records.add(new CategoryCountObject(objectId, catIdList, catCountList));
             }
             return records;
         } catch (FileNotFoundException e) {
