@@ -7,5 +7,5 @@ I think this problem can be solved as follow:
     - 5.1 Get the first element of the heap and add the data part to the new file in 4th step
     - 5.2 Determine the file which contains the first element of the heap 
     - 5.3 If the file which contained element that has been remove from the heap is not empty: 
-            add the first element of the file along with its file name to the heap 
+            remove the first element of the file and add it along with its file name to the heap 
 6. return the new sorted file
