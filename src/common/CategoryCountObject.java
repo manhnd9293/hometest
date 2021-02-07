@@ -45,4 +45,28 @@ public class CategoryCountObject {
                 ", categoryCont=" + categoryCont +
                 '}';
     }
+
+    public String getCsvString() {
+        return objectId + "\t" + getIdStringFromList(categoryId) + "\t" + getIdStringFromList(categoryCont);
+    }
+
+    private String getIdStringFromList(List<Long> idList) {
+        if (idList == null) {
+            return "[]";
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        idList.forEach(id -> sb.append(id + ","));
+        sb.deleteCharAt(sb.length() - 1);
+        sb.append("]");
+        return sb.toString();
+    }
+
+    public static void main(String[] args) {
+        CategoryCountObject test = new CategoryCountObject("1", List.of(1L, 2L, 3L), null);
+        String csvString = test.getCsvString();
+        System.out.println(csvString);
+
+    }
+
 }
