@@ -3,8 +3,6 @@ package common;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -16,8 +14,12 @@ public class Utils {
         try (BufferedReader br = new BufferedReader(new FileReader(fileLocation))) {
             String line;
             while ((line = br.readLine()) != null) {
+                System.out.println(line);
                 String[] values = line.split("\t");
                 String objectId = values[0];
+                System.out.println("objId = "+ objectId);
+                System.out.println("cat id = "+ values[1]);
+                System.out.println("cat id cout = "+ values[2]);
                 List<Long> catIdList = getLongList(values[1]);
                 List<Long> catCountList = getLongList(values[2]);
                 records.add(new CategoryCountObject(objectId, catIdList, catCountList));
@@ -26,7 +28,6 @@ public class Utils {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
-            ;
             e.printStackTrace();
         }
         return null;
@@ -53,11 +54,11 @@ public class Utils {
         return res;
     }
 
-    public static List<File> separateFile(String fileLocation, Integer numsLineLimit) {
-        createDirectory("testFiles");
+    public static List<File> separateFile(String sourceFileLocation, String targetDir, Integer numsLineLimit ) {
+        createDirectory(Path.of(targetDir));
 
         List<File> result = new LinkedList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(fileLocation))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(sourceFileLocation))) {
             StringBuilder stringBuilder = new StringBuilder();
             String line;
             Integer numsLine = 0;
@@ -67,7 +68,7 @@ public class Utils {
                 stringBuilder.append(line + "\n");
                 if ((int)numsLine == numsLineLimit) {
                     fileIndex++;
-                    File splitFile = createFile("split" + fileIndex+ ".csv" ,  "testFiles");
+                    File splitFile = createFile(targetDir + "/split" + fileIndex+ ".csv" );
                     String data = stringBuilder.toString();
                     writeDataToFile(data, splitFile);
                     numsLine = 0;
@@ -83,9 +84,9 @@ public class Utils {
         return result;
     }
 
-    public static void createDirectory(String dirName) {
+    public static void createDirectory(Path dirPath) {
         try {
-            Files.createDirectories(Path.of(dirName));
+            Files.createDirectories(dirPath);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -93,16 +94,16 @@ public class Utils {
 
     public static void writeDataToFile(String data, File file) {
         try (PrintStream out = new PrintStream(new FileOutputStream(file.getAbsolutePath()))) {
-            out.print(data);
+            out.append(data);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
     }
 
 
-    public static File createFile(String fileName, String dir) {
-        createDirectory(dir);
-        Path path = Paths.get(dir + "/" + fileName);
+    public static File createFile(String filePath) {
+        Path path = Path.of(filePath);
+        createDirectory(path.getParent());
         try {
             File file = new File(path.toUri());
             if (file.createNewFile()) {
@@ -118,25 +119,24 @@ public class Utils {
         return null;
     }
 
-    private static File writeToCsvFile(List<CategoryCountObject> list) {
-        File file = createFile("randomOrderData.csv", "randomOrder");
+    public static File writeToCsvFile(List<CategoryCountObject> list, String filePath) {
+        File file = createFile(filePath);
         StringBuilder sb = new StringBuilder();
         for (CategoryCountObject item : list) {
             sb.append(item.getCsvString() + "\n");
         }
         writeDataToFile(sb.toString(), file);
-
         return file;
     }
 
-    private static File randomShuffleFile(String fileLocation) {
-        List<CategoryCountObject> categoryCountObjects = readDataFromCsvFile(fileLocation);
+    public static File getRandomOrderFile(String sourceFilePath, String targetFilePath) {
+        List<CategoryCountObject> categoryCountObjects = readDataFromCsvFile(sourceFilePath);
         List<CategoryCountObject> randomList = List.copyOf(Set.copyOf(categoryCountObjects));
-        return writeToCsvFile(randomList);
+        return writeToCsvFile(randomList,targetFilePath);
     }
 
     public static void main(String[] args) {
-        randomShuffleFile("src/hash_catid_count.csv");
-
+        int res = "9".compareTo("10");
+        System.out.println(res);
     }
 }

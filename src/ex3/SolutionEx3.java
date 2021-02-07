@@ -1,4 +1,4 @@
-package test;
+package ex3;
 
 import common.CategoryCountObject;
 import common.Utils;
@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.PriorityQueue;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
@@ -40,13 +41,12 @@ class CategoryObjectAndFilePath{
     }
 }
 
-public class Main {
-    public static void sortLargeFile(String fileLocation) {
-        int maxNumsLine = 100;
-        List<File> files = Utils.separateFile(fileLocation, maxNumsLine);
-
-        //todo sort each file in list files by order id
-
+public class SolutionEx3 {
+    public File sortLargeFile(String fileLocation) {
+        int maxNumsLine = 2;
+        String smallFilesDir = "smallFiles";
+        List<File> files = Utils.separateFile(fileLocation, smallFilesDir, maxNumsLine);
+        List<File> smallSortedFiles = files.stream().map(file -> sortSmallFileByObjectId(file)).collect(Collectors.toList());
 
         HashMap<String, Integer> filePathToNextLineToRead = new HashMap<>();
 
@@ -57,7 +57,7 @@ public class Main {
             }
         });
 
-        files.forEach(file -> {
+        smallSortedFiles.forEach(file -> {
             String lineData = getLineData(file.getPath(), 0);
             if (lineData == null) return;
             CategoryCountObject categoryCountObject = Utils.convertCsvLineDataToObject(lineData);
@@ -65,25 +65,42 @@ public class Main {
             filePathToNextLineToRead.put(file.getPath(), 1);
         });
 
-        File file = Utils.createFile("sortFile", "result");
-        while (categoryCountObjectPriorityQueue.isEmpty()) {
+        File file = Utils.createFile("result/result.csv");
+        System.out.println("print sort result");
+        while (!categoryCountObjectPriorityQueue.isEmpty()) {
             CategoryObjectAndFilePath item = categoryCountObjectPriorityQueue.poll();
             CategoryCountObject categoryCountObject = item.getCategoryCountObject();
+            System.out.println(categoryCountObject);
             Utils.writeDataToFile(categoryCountObject.getCsvString() + "\n", file);
             String path = item.getPath();
             Integer lineToRead = filePathToNextLineToRead.get(path);
-            String nextQueueObject = getLineData(path, lineToRead);
-            if (nextQueueObject != null) {
-                categoryCountObjectPriorityQueue.add(new CategoryObjectAndFilePath(Utils.convertCsvLineDataToObject(nextQueueObject), path));
-                filePathToNextLineToRead.put(path, lineToRead + 1);
+            try {
+                String nextObjectInQueueData = getLineData(path, lineToRead);
+                if (nextObjectInQueueData != null) {
+                    categoryCountObjectPriorityQueue.add(new CategoryObjectAndFilePath(Utils.convertCsvLineDataToObject(nextObjectInQueueData), path));
+                    filePathToNextLineToRead.put(path, lineToRead + 1);
+                }
+            } catch (Exception e) {
+                continue;
             }
+
         }
+
+        return file;
     }
 
-    public static String getLineData(String fileLocation, Integer lineNo) {
+    private File sortSmallFileByObjectId(File file) {
+        List<CategoryCountObject> categoryCountObjects = Utils.readDataFromCsvFile(file.getPath());
+        categoryCountObjects.sort(Comparator.comparing(CategoryCountObject::getObjectId));
+        String filePath = "small_file_sorted/" + file.getName() + "_sorted.csv";
+        File resultFile = Utils.createFile(filePath);
+        Utils.writeToCsvFile(categoryCountObjects, filePath);
+        return resultFile;
+    }
+
+    public String getLineData(String fileLocation, Integer lineNo) {
         try (Stream lines = Files.lines(Paths.get(fileLocation))) {
             String extractedLine = (String) lines.skip(lineNo).findFirst().get();
-            System.out.println(extractedLine);
             return extractedLine;
         } catch (IOException e) {
             e.printStackTrace();
@@ -92,6 +109,10 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        String lineData = getLineData("src/hash_catid_count.csv",99999);
+        SolutionEx3 mainEx3 = new SolutionEx3();
+        String sourceFilePath = "src/test.csv";
+        String targetFilePath = "testFile/randomOrderFile.csv";
+        Utils.getRandomOrderFile(sourceFilePath, targetFilePath);
+        mainEx3.sortLargeFile(targetFilePath);
     }
 }
