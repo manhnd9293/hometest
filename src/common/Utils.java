@@ -22,9 +22,6 @@ public class Utils {
                 System.out.println(line);
                 String[] values = line.split("\t");
                 String objectId = values[0];
-                System.out.println("objId = " + objectId);
-                System.out.println("cat id = " + values[1]);
-                System.out.println("cat id cout = " + values[2]);
                 List<Long> catIdList = getLongList(values[1]);
                 List<Long> catCountList = getLongList(values[2]);
                 records.add(new CategoryCountObject(objectId, catIdList, catCountList));
