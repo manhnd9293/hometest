@@ -17,9 +17,9 @@ public class Utils {
                 System.out.println(line);
                 String[] values = line.split("\t");
                 String objectId = values[0];
-                System.out.println("objId = "+ objectId);
-                System.out.println("cat id = "+ values[1]);
-                System.out.println("cat id cout = "+ values[2]);
+                System.out.println("objId = " + objectId);
+                System.out.println("cat id = " + values[1]);
+                System.out.println("cat id cout = " + values[2]);
                 List<Long> catIdList = getLongList(values[1]);
                 List<Long> catCountList = getLongList(values[2]);
                 records.add(new CategoryCountObject(objectId, catIdList, catCountList));
@@ -54,7 +54,7 @@ public class Utils {
         return res;
     }
 
-    public static List<File> separateFile(String sourceFileLocation, String targetDir, Integer numsLineLimit ) {
+    public static List<File> separateFile(String sourceFileLocation, String targetDir, Integer numsLineLimit) {
         createDirectory(Path.of(targetDir));
 
         List<File> result = new LinkedList<>();
@@ -63,25 +63,36 @@ public class Utils {
             String line;
             Integer numsLine = 0;
             Integer fileIndex = 0;
-            while ((line = br.readLine()) != null) {
+            while (true) {
+                line = br.readLine();
+                if (line == null) {
+                    if (stringBuilder.toString().length() != 0) {
+                        File splitFile = getSplitFile(targetDir, stringBuilder, fileIndex);
+                        result.add(splitFile);
+                    }
+                    break;
+                }
                 numsLine++;
                 stringBuilder.append(line + "\n");
-                if ((int)numsLine == numsLineLimit) {
+                if ((int) numsLine == numsLineLimit) {
+                    File splitFile = getSplitFile(targetDir, stringBuilder, fileIndex);
                     fileIndex++;
-                    File splitFile = createFile(targetDir + "/split" + fileIndex+ ".csv" );
-                    String data = stringBuilder.toString();
-                    writeDataToFile(data, splitFile);
                     numsLine = 0;
                     stringBuilder = new StringBuilder();
                     result.add(splitFile);
                 }
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
         return result;
+    }
+
+    private static File getSplitFile(String targetDir, StringBuilder stringBuilder, Integer fileIndex) {
+        String data = stringBuilder.toString();
+        File splitFile = createFile(targetDir + "/split" + fileIndex + ".csv");
+        writeDataToFile(data, splitFile);
+        return splitFile;
     }
 
     public static void createDirectory(Path dirPath) {
@@ -93,9 +104,11 @@ public class Utils {
     }
 
     public static void writeDataToFile(String data, File file) {
-        try (PrintStream out = new PrintStream(new FileOutputStream(file.getAbsolutePath()))) {
-            out.append(data);
-        } catch (FileNotFoundException e) {
+        try {
+            FileOutputStream out = new FileOutputStream(file.getAbsolutePath(), true);
+            out.write(data.getBytes());
+            out.close();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -107,9 +120,8 @@ public class Utils {
         try {
             File file = new File(path.toUri());
             if (file.createNewFile()) {
-                System.out.println("File created: " + file.getName());
             } else {
-                System.out.println("File already exists.");
+//                System.out.println("File already exists.");
             }
             return file;
         } catch (IOException e) {
@@ -132,7 +144,7 @@ public class Utils {
     public static File getRandomOrderFile(String sourceFilePath, String targetFilePath) {
         List<CategoryCountObject> categoryCountObjects = readDataFromCsvFile(sourceFilePath);
         List<CategoryCountObject> randomList = List.copyOf(Set.copyOf(categoryCountObjects));
-        return writeToCsvFile(randomList,targetFilePath);
+        return writeToCsvFile(randomList, targetFilePath);
     }
 
     public static void main(String[] args) {

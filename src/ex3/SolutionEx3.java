@@ -7,15 +7,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.PriorityQueue;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
-class CategoryObjectAndFilePath{
+class CategoryObjectAndFilePath implements Comparable<CategoryObjectAndFilePath>{
     private CategoryCountObject categoryCountObject;
     private String path;
 
@@ -39,23 +36,23 @@ class CategoryObjectAndFilePath{
     public void setPath(String path) {
         this.path = path;
     }
+
+    @Override
+    public int compareTo(CategoryObjectAndFilePath compareObject) {
+        return this.getCategoryCountObject().compareTo(compareObject.getCategoryCountObject());
+    }
 }
 
 public class SolutionEx3 {
     public File sortLargeFile(String fileLocation) {
-        int maxNumsLine = 2;
+        int maxNumsLine = 1000;
         String smallFilesDir = "smallFiles";
         List<File> files = Utils.separateFile(fileLocation, smallFilesDir, maxNumsLine);
         List<File> smallSortedFiles = files.stream().map(file -> sortSmallFileByObjectId(file)).collect(Collectors.toList());
 
         HashMap<String, Integer> filePathToNextLineToRead = new HashMap<>();
 
-        PriorityQueue<CategoryObjectAndFilePath> categoryCountObjectPriorityQueue = new PriorityQueue<>(new Comparator<CategoryObjectAndFilePath>() {
-            @Override
-            public int compare(CategoryObjectAndFilePath first, CategoryObjectAndFilePath second) {
-                return first.getCategoryCountObject().getObjectId().compareTo(second.getCategoryCountObject().getObjectId());
-            }
-        });
+        PriorityQueue<CategoryObjectAndFilePath> categoryCountObjectPriorityQueue = new PriorityQueue<>();
 
         smallSortedFiles.forEach(file -> {
             String lineData = getLineData(file.getPath(), 0);
@@ -70,7 +67,7 @@ public class SolutionEx3 {
         while (!categoryCountObjectPriorityQueue.isEmpty()) {
             CategoryObjectAndFilePath item = categoryCountObjectPriorityQueue.poll();
             CategoryCountObject categoryCountObject = item.getCategoryCountObject();
-            System.out.println(categoryCountObject);
+//            System.out.println(categoryCountObject);
             Utils.writeDataToFile(categoryCountObject.getCsvString() + "\n", file);
             String path = item.getPath();
             Integer lineToRead = filePathToNextLineToRead.get(path);
@@ -83,15 +80,13 @@ public class SolutionEx3 {
             } catch (Exception e) {
                 continue;
             }
-
         }
-
         return file;
     }
 
     private File sortSmallFileByObjectId(File file) {
         List<CategoryCountObject> categoryCountObjects = Utils.readDataFromCsvFile(file.getPath());
-        categoryCountObjects.sort(Comparator.comparing(CategoryCountObject::getObjectId));
+        Collections.sort(categoryCountObjects);
         String filePath = "small_file_sorted/" + file.getName() + "_sorted.csv";
         File resultFile = Utils.createFile(filePath);
         Utils.writeToCsvFile(categoryCountObjects, filePath);
@@ -110,7 +105,8 @@ public class SolutionEx3 {
 
     public static void main(String[] args) {
         SolutionEx3 mainEx3 = new SolutionEx3();
-        String sourceFilePath = "src/test.csv";
+        String sourceFilePath = "src/hash_catid_count.csv";
+//        String sourceFilePath = "src/test.csv";
         String targetFilePath = "testFile/randomOrderFile.csv";
         Utils.getRandomOrderFile(sourceFilePath, targetFilePath);
         mainEx3.sortLargeFile(targetFilePath);
