@@ -11,9 +11,18 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-
+/**
+ * class to combine information of category count object and csv file containing information of it
+ */
 class CategoryObjectAndFilePath implements Comparable<CategoryObjectAndFilePath>{
+    /**
+     * category count object
+     */
     private CategoryCountObject categoryCountObject;
+
+    /**
+     * path of csv file containing information of category count object
+     */
     private String path;
 
     public CategoryObjectAndFilePath(CategoryCountObject categoryCountObject, String path) {
@@ -44,10 +53,15 @@ class CategoryObjectAndFilePath implements Comparable<CategoryObjectAndFilePath>
 }
 
 public class SolutionEx3 {
+    /**
+     * sort a large file by object id which size is larger than memory
+     * @param fileLocation location of the large file
+     * @return sorted file
+     */
     public File sortLargeFile(String fileLocation) {
         int maxNumsLine = 1000;
         String smallFilesDir = "smallFiles";
-        List<File> files = Utils.separateFile(fileLocation, smallFilesDir, maxNumsLine);
+        List<File> files = Utils.separateLargeFile(fileLocation, smallFilesDir, maxNumsLine);
         List<File> smallSortedFiles = files.stream().map(file -> sortSmallFileByObjectId(file)).collect(Collectors.toList());
 
         HashMap<String, Integer> filePathToNextLineToRead = new HashMap<>();
@@ -63,12 +77,10 @@ public class SolutionEx3 {
         });
 
         File file = Utils.createFile("result/result.csv");
-        System.out.println("print sort result");
         while (!categoryCountObjectPriorityQueue.isEmpty()) {
             CategoryObjectAndFilePath item = categoryCountObjectPriorityQueue.poll();
             CategoryCountObject categoryCountObject = item.getCategoryCountObject();
-//            System.out.println(categoryCountObject);
-            Utils.writeDataToFile(categoryCountObject.getCsvString() + "\n", file);
+            Utils.appendDataToFile(categoryCountObject.getCsvString() + "\n", file);
             String path = item.getPath();
             Integer lineToRead = filePathToNextLineToRead.get(path);
             try {
@@ -84,6 +96,12 @@ public class SolutionEx3 {
         return file;
     }
 
+    /**
+     * sort small file by object id
+     * assume that total data in the file can fit into memory
+     * @param file unordered file
+     * @return sorted file
+     */
     private File sortSmallFileByObjectId(File file) {
         List<CategoryCountObject> categoryCountObjects = Utils.readDataFromCsvFile(file.getPath());
         Collections.sort(categoryCountObjects);
@@ -93,8 +111,15 @@ public class SolutionEx3 {
         return resultFile;
     }
 
+    /**
+     * read category count information at specific line in csv file
+     * @param fileLocation path to file need to read
+     * @param lineNo line number at which user want to read data
+     * @return string data at specific line
+     */
     public String getLineData(String fileLocation, Integer lineNo) {
-        try (Stream lines = Files.lines(Paths.get(fileLocation))) {
+        try {
+            Stream lines = Files.lines(Paths.get(fileLocation));
             String extractedLine = (String) lines.skip(lineNo).findFirst().get();
             return extractedLine;
         } catch (IOException e) {
@@ -106,7 +131,6 @@ public class SolutionEx3 {
     public static void main(String[] args) {
         SolutionEx3 mainEx3 = new SolutionEx3();
         String sourceFilePath = "src/hash_catid_count.csv";
-//        String sourceFilePath = "src/test.csv";
         String targetFilePath = "testFile/randomOrderFile.csv";
         Utils.getRandomOrderFile(sourceFilePath, targetFilePath);
         mainEx3.sortLargeFile(targetFilePath);
