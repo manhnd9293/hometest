@@ -13,6 +13,6 @@ Environment information:
 java version "11.0.5"
 
 ###Update information:
-1. Question3:
+Question3:
 I update the implementation for question 3. 
 Please run main method in SolutionEx3 class and find result.csv file in result directory for output of algorithm
