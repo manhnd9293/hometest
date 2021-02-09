@@ -1,4 +1,4 @@
-# Coccoc home ex3
+# Coccoc home test
 Candidate: Nguyen Duc Manh
 
 This is my home ex3 result
@@ -12,3 +12,7 @@ Environment information:
 
 java version "11.0.5"
 
+###Update information:
+1. Question3:
+I update the implementation for question 3. 
+Please run main method in SolutionEx3 class and find result.csv file in result directory for output of algorithm
